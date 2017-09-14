@@ -46,6 +46,6 @@ paradoxProperties ++= Map(
   "snip.akka.base_dir" -> (baseDirectory in ThisBuild).value.getAbsolutePath,
   "fiddle.code.base_dir" -> (sourceDirectory in Test).value.getAbsolutePath
 )
-paradoxGroups := Map("Languages" -> Seq("Scala", "Java"))
+paradoxGroups := Map("Language" -> Seq("Scala", "Java"))
 
 resolvers += Resolver.jcenterRepo
