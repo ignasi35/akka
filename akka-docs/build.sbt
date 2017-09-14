@@ -12,7 +12,7 @@ additionalTasks in ValidatePR += paradox in Compile
 
 enablePlugins(ScaladocNoVerificationOfDiagrams)
 disablePlugins(MimaPlugin)
-enablePlugins(AkkaParadoxPlugin)
+enablePlugins(AkkaParadoxPlugin, DeployRsync)
 
 name in (Compile, paradox) := "Akka"
 
@@ -47,5 +47,7 @@ paradoxProperties ++= Map(
   "fiddle.code.base_dir" -> (sourceDirectory in Test).value.getAbsolutePath
 )
 paradoxGroups := Map("Language" -> Seq("Scala", "Java"))
+
+deployRsyncArtifact := List((paradox in Compile).value -> s"www/docs/akka/${version.value}")
 
 resolvers += Resolver.jcenterRepo
