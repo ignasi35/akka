@@ -20,6 +20,17 @@ The Java 8 `Stream` will be ended when the stream flowing into this `Sink` compl
 
 Be aware that Java `Stream` blocks current thread while waiting on next element from downstream.
 
+## Example
+
+Here is an example of a Sink that materializes into a `java.util.stream.Stream`. 
+
+Scala
+:   @@snip [StreamConvertersToJava.scala](/akka-docs/src/test/scala/docs/stream/operators/converters/StreamConvertersToJava.scala) { #asJavaStream }
+
+Java
+:   @@snip [StreamConvertersToJava.java](/akka-docs/src/test/java/jdocs/stream/operators/converters/StreamConvertersToJava.java) { #import #asJavaStream }
+
+
 ## Reactive Streams semantics
 
 @@@div { .callout }
