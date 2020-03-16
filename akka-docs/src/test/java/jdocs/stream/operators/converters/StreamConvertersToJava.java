@@ -7,9 +7,17 @@ package jdocs.stream.operators.converters;
 import akka.NotUsed;
 import akka.actor.ActorSystem;
 // #import
+import akka.japi.function.Creator;
 import akka.stream.Materializer;
 import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.StreamConverters;
+
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.stream.BaseStream;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 // #import
 import akka.testkit.javadsl.TestKit;
@@ -48,8 +56,24 @@ public class StreamConvertersToJava extends AbstractJavaTest {
     Sink<Integer, Stream<Integer>> sink = StreamConverters.<Integer>asJavaStream();
 
     Stream<Integer> jStream = source.runWith(sink, mat);
-    assertEquals(5, jStream.count());
 
     // #asJavaStream
+    assertEquals(5, jStream.count());
+  }
+
+  @Test
+  public void demonstrateCreatingASourceFromJava8Stream()
+      throws InterruptedException, ExecutionException, TimeoutException {
+    // #fromJavaStream
+
+    Creator<BaseStream<Integer, IntStream>> creator = () -> IntStream.rangeClosed(0, 9);
+    Source<Integer, NotUsed> source = StreamConverters.fromJavaStream(creator);
+
+    Sink<Integer, CompletionStage<Integer>> sink = Sink.last();
+
+    CompletionStage<Integer> integerCompletionStage = source.runWith(sink, mat);
+    // #fromJavaStream
+    assertEquals(
+        9, integerCompletionStage.toCompletableFuture().get(5, TimeUnit.SECONDS).intValue());
   }
 }

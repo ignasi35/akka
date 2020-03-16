@@ -22,10 +22,10 @@ Be aware that Java `Stream` blocks current thread while waiting on next element 
 
 ## Example
 
-Here is an example of a Sink that materializes into a `java.util.stream.Stream`. 
+Here is an example of a `Sink` that materializes into a `java.util.stream.Stream`. 
 
 Scala
-:   @@snip [StreamConvertersToJava.scala](/akka-docs/src/test/scala/docs/stream/operators/converters/StreamConvertersToJava.scala) { #asJavaStream }
+:   @@snip [StreamConvertersToJava.scala](/akka-docs/src/test/scala/docs/stream/operators/converters/StreamConvertersToJava.scala) { #import #asJavaStream }
 
 Java
 :   @@snip [StreamConvertersToJava.java](/akka-docs/src/test/java/jdocs/stream/operators/converters/StreamConvertersToJava.java) { #import #asJavaStream }
