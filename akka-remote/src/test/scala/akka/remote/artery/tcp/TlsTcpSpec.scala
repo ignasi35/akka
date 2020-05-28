@@ -49,6 +49,29 @@ class TlsTcpWithCrappyRSAWithMD5OnlyHereToMakeSureThingsWorkSpec
     }
     """))
 
+class TlsTcpWithECKeysSpec extends TlsTcpSpec(ConfigFactory.parseString(s"""
+    akka.remote.artery.ssl.config-ssl-engine {
+         key-store = ${getClass.getClassLoader.getResource("ssl/example.com.p12").getPath}
+         key-store-password = "kLnCu3rboe"
+         key-password = "kLnCu3rboe"
+         trust-store = ${getClass.getClassLoader.getResource("ssl/exampleca.p12").getPath}
+         trust-store-password = "kLnCu3rboe"
+#         enabled-algorithms = 
+         #["TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384"] 
+#         ["TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384"]
+    }
+    """))
+
+class TlsTcpWithECNodeKeysSpec extends TlsTcpSpec(ConfigFactory.parseString(s"""
+    akka.remote.artery.ssl.config-ssl-engine {
+         key-store = ${getClass.getClassLoader.getResource("ssl/node.example.com.p12").getPath}
+         key-store-password = "kLnCu3rboe"
+         key-password = "kLnCu3rboe"
+         trust-store = ${getClass.getClassLoader.getResource("ssl/exampleca.p12").getPath}
+         trust-store-password = "kLnCu3rboe"
+    }
+    """))
+
 class TlsTcpWithCloudNativeSslEngineSpec extends TlsTcpSpec(ConfigFactory.parseString(s"""
     akka.remote.artery.ssl {
        ssl-engine-provider = akka.remote.artery.tcp.ssl.CloudNativeSSLEngineProvider
@@ -60,8 +83,7 @@ class TlsTcpWithCloudNativeSslEngineSpec extends TlsTcpSpec(ConfigFactory.parseS
     }
     """))
 
-class TlsTcpWithMagicSslEngineSpec
-    extends TlsTcpSpec(ConfigFactory.parseString(s"""
+class TlsTcpWithMagicSslEngineSpec extends TlsTcpSpec(ConfigFactory.parseString(s"""
     akka.remote.artery.ssl {
        ssl-engine-provider = akka.remote.artery.tcp.ssl.TlsMagicSSLEngineProvider
        tls-magic-engine {
