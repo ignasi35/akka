@@ -22,6 +22,10 @@ class DERPrivateKeyLoaderSpec extends AnyWordSpec with Matchers with EitherValue
       pkcs1 should ===(pkcs8)
     }
 
+    "decode EC keys" in {
+      load("one.example.com.pem")
+    }
+
     "parse multi primes" in {
       load("multi-prime-pkcs1.pem")
       // Not much we can verify here - I actually think the default JDK security implementation ignores the extra

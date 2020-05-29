@@ -38,7 +38,9 @@ object DERPrivateKeyLoader {
       case "RSA PRIVATE KEY" =>
         loadPkcs1PrivateKey(derData.bytes)
       case "PRIVATE KEY" =>
-        loadPkcs8PrivateKey(derData.bytes)
+        loadPkcs8RSAPrivateKey(derData.bytes)
+      case "EC PRIVATE KEY" =>
+        loadPkcs8ECPrivateKey(derData.bytes)
       case unknown =>
         throw new PEMLoadingException(s"Don't know how to read a private key from PEM data with label [$unknown]")
     }
@@ -121,9 +123,14 @@ object DERPrivateKeyLoader {
     }
   }
 
-  private def loadPkcs8PrivateKey(bytes: Array[Byte]) = {
+  private def loadPkcs8RSAPrivateKey(bytes: Array[Byte]) = {
     val keySpec = new PKCS8EncodedKeySpec(bytes)
     val keyFactory = KeyFactory.getInstance("RSA")
+    keyFactory.generatePrivate(keySpec)
+  }
+  private def loadPkcs8ECPrivateKey(bytes: Array[Byte]) = {
+    val keySpec = new PKCS8EncodedKeySpec(bytes)
+    val keyFactory = KeyFactory.getInstance("EC")
     keyFactory.generatePrivate(keySpec)
   }
 
