@@ -7,6 +7,7 @@ package akka.pki.pem
 import java.math.BigInteger
 import java.security.KeyFactory
 import java.security.PrivateKey
+import java.security.spec.InvalidKeySpecException
 import java.security.spec.PKCS8EncodedKeySpec
 import java.security.spec.RSAMultiPrimePrivateCrtKeySpec
 import java.security.spec.RSAOtherPrimeInfo
@@ -19,6 +20,8 @@ import com.hierynomus.asn1.encodingrules.der.DERDecoder
 import com.hierynomus.asn1.types.constructed.ASN1Sequence
 import com.hierynomus.asn1.types.primitive.ASN1Integer
 
+import scala.util.Try
+
 final class PEMLoadingException(message: String, cause: Throwable) extends RuntimeException(message, cause) {
   def this(msg: String) = this(msg, null)
 }
@@ -29,7 +32,7 @@ object DERPrivateKeyLoader {
    * Converts the DER payload in [[PEMDecoder.DERData]] into a [[java.security.PrivateKey]]. The received DER
    * data must be a valid PKCS#1 (identified in PEM as "RSA PRIVATE KEY") or non-ecnrypted PKCS#8 (identified
    * in PEM as "PRIVATE KEY").
-   * @throws PEMLoadingException when the `derData` is for an unsupported format
+   * @throws PEMLoadingException when the `derData` is for an unsupported format .
    */
   @ApiMayChange
   @throws[PEMLoadingException]("when the `derData` is for an unsupported format")
@@ -37,10 +40,15 @@ object DERPrivateKeyLoader {
     derData.label match {
       case "RSA PRIVATE KEY" =>
         loadPkcs1PrivateKey(derData.bytes)
+//      case "EC PRIVATE KEY" =>
+//        loadPkcs8PrivateKey(derData.bytes, "EC")
       case "PRIVATE KEY" =>
-        loadPkcs8RSAPrivateKey(derData.bytes)
-      case "EC PRIVATE KEY" =>
-        loadPkcs8ECPrivateKey(derData.bytes)
+        try {
+          Try(loadPkcs8PrivateKey(derData.bytes, "RSA")).orElse(Try(loadPkcs8PrivateKey(derData.bytes, "EC"))).get
+        } catch {
+          case t: InvalidKeySpecException =>
+            throw new PEMLoadingException(s"Unsupported PRIVATE KEY algorithm", t)
+        }
       case unknown =>
         throw new PEMLoadingException(s"Don't know how to read a private key from PEM data with label [$unknown]")
     }
@@ -123,14 +131,9 @@ object DERPrivateKeyLoader {
     }
   }
 
-  private def loadPkcs8RSAPrivateKey(bytes: Array[Byte]) = {
+  private def loadPkcs8PrivateKey(bytes: Array[Byte], algorithm: String) = {
     val keySpec = new PKCS8EncodedKeySpec(bytes)
-    val keyFactory = KeyFactory.getInstance("RSA")
-    keyFactory.generatePrivate(keySpec)
-  }
-  private def loadPkcs8ECPrivateKey(bytes: Array[Byte]) = {
-    val keySpec = new PKCS8EncodedKeySpec(bytes)
-    val keyFactory = KeyFactory.getInstance("EC")
+    val keyFactory = KeyFactory.getInstance(algorithm)
     keyFactory.generatePrivate(keySpec)
   }
 

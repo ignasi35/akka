@@ -15,21 +15,31 @@ import org.scalatest.wordspec.AnyWordSpec
 
 class DERPrivateKeyLoaderSpec extends AnyWordSpec with Matchers with EitherValues {
 
+  // more info at https://docs.oracle.com/javase/7/docs/technotes/tools/windows/keytool.html
+
   "The DER Private Key loader" should {
     "decode the same key in PKCS#1 and PKCS#8 formats" in {
       val pkcs1 = load("pkcs1.pem")
-      val pkcs8 = load("pkcs8.pem")
+      val pkcs8 = load("RSA-pkcs8.pem")
       pkcs1 should ===(pkcs8)
+      pkcs8.getAlgorithm should be("RSA")
     }
 
-    "decode EC keys" in {
-      load("one.example.com.pem")
+    "decode EC keys on PKCS#1" ignore {
+      val privateKey = load("EC-pkcs1.pem")
+      privateKey.getAlgorithm should be("EC")
+    }
+
+    "decode EC keys on PKCS#8" in {
+      val privateKey = load("EC-pkcs8.pem")
+      privateKey.getAlgorithm should be("EC")
     }
 
     "parse multi primes" in {
-      load("multi-prime-pkcs1.pem")
+      val pk = load("multi-prime-pkcs1.pem")
+      pk.getAlgorithm should be("RSA")
       // Not much we can verify here - I actually think the default JDK security implementation ignores the extra
-      // primes, and it fails to parse a multi-prime PKCS#8 key.
+      // primes, and it fails to parse a multi-prime PKCS#8 key
     }
 
     "fail on unsupported PEM contents (Certificates are not private keys)" in {
