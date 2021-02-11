@@ -10,19 +10,17 @@ import java.util.concurrent.TimeUnit
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
-import com.typesafe.config.ConfigFactory
-import org.openjdk.jmh.annotations._
-
 import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.remote.artery.BenchTestSource
 import akka.remote.artery.LatchSink
-import akka.stream.impl.fusing.GraphStages
 import akka.stream.scaladsl._
 import akka.stream.testkit.scaladsl.StreamTestKit
+import com.typesafe.config.ConfigFactory
+import org.openjdk.jmh.annotations._
 
 object FlatMapConcatBenchmark {
-  final val OperationsPerInvocation = 100000
+  final val OperationsPerInvocation = 100
 }
 
 @State(Scope.Benchmark)
@@ -58,36 +56,17 @@ class FlatMapConcatBenchmark {
 
   @Benchmark
   @OperationsPerInvocation(OperationsPerInvocation)
-  def sourceDotSingle(): Unit = {
+  def sourceDotFromPublisher(): Unit = {
     val latch = new CountDownLatch(1)
 
-    testSource.flatMapConcat(Source.single).runWith(new LatchSink(OperationsPerInvocation, latch))
+    testSource.flatMapConcat{
+      i =>
+        Source.fromPublisher(Source.single(i).runWith(Sink.asPublisher(true)))
+    }.runWith(new LatchSink(OperationsPerInvocation, latch))
 
     awaitLatch(latch)
   }
-
-  @Benchmark
-  @OperationsPerInvocation(OperationsPerInvocation)
-  def internalSingleSource(): Unit = {
-    val latch = new CountDownLatch(1)
-
-    testSource
-      .flatMapConcat(elem => new GraphStages.SingleSource(elem))
-      .runWith(new LatchSink(OperationsPerInvocation, latch))
-
-    awaitLatch(latch)
-  }
-
-  @Benchmark
-  @OperationsPerInvocation(OperationsPerInvocation)
-  def oneElementList(): Unit = {
-    val latch = new CountDownLatch(1)
-
-    testSource.flatMapConcat(n => Source(n :: Nil)).runWith(new LatchSink(OperationsPerInvocation, latch))
-
-    awaitLatch(latch)
-  }
-
+  
   @Benchmark
   @OperationsPerInvocation(OperationsPerInvocation)
   def mapBaseline(): Unit = {

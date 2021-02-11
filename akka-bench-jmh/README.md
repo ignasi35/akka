@@ -7,7 +7,7 @@ own jmh module)
 You can run them like:
 
    project akka-bench-jmh
-   jmh:run -i 3 -wi 3 -f 1 .*ActorCreationBenchmark
+   jmh:run -i 3 -wi 3 -f 1 .*FlatMapConcatBenchmark
 
 Use 'jmh:run -h' to get an overview of the available options.
 
